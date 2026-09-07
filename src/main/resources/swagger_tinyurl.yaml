@@ -1,0 +1,149 @@
+openapi: 3.2.0
+info:
+  title: TinyURL API
+  description: API for shortening URLs and redirecting short keys to their target locations.
+  version: 1.0.0
+servers:
+  - url: https://api.tinyurl.com/v1
+    description: Production server
+tags:
+  - name: tinyurl
+    description: URL shortener operations
+paths:
+  /url:
+    post:
+      tags:
+        - tinyurl
+      summary: Create a short URL
+      description: Generates a shortened URL contract from a given long URL and optional parameters.
+      operationId: createShortUrl
+      requestBody:
+        description: URL creation parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUrlRequest'
+      responses:
+        '201':
+          description: Short URL created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateUrlResponse'
+        '400':
+          description: Invalid input or alias already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{shortKey}:
+    get:
+      tags:
+        - tinyurl
+      summary: Redirect to target long URL
+      description: Look up long URL by short key and issue a redirect response.
+      operationId: getShortUrl
+      parameters:
+        - name: shortKey
+          in: path
+          required: true
+          description: The unique key corresponding to the shortened URL
+          schema:
+            type: string
+            examples: ["abc123X"]
+      responses:
+        '301':
+          description: Permanent Redirect
+          headers:
+            Location:
+              description: Target long URL
+              schema:
+                type: string
+                format: uri
+                examples: ["https://www.example.com/very/long/url/path"]
+        '302':
+          description: Found / Temporary Redirect
+          headers:
+            Location:
+              description: Target long URL
+              schema:
+                type: string
+                format: uri
+                examples: ["https://www.example.com/very/long/url/path"]
+        '404':
+          description: Short URL key not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateUrlRequest:
+      type: object
+      required:
+        - longUrl
+      properties:
+        longUrl:
+          type: string
+          format: uri
+          description: The original long URL to be shortened
+          examples: ["https://www.example.com/very/long/url/path"]
+        customerAlias:
+          type: string
+          description: Optional custom key requested by the customer
+          examples: ["my-custom-alias"]
+        expireAt:
+          type: string
+          format: date-time
+          description: Optional timestamp indicating when the short URL expires
+          examples: ["2030-01-01T00:00:00Z"]
+
+    CreateUrlResponse:
+      type: object
+      required:
+        - shortKey
+        - shortUrl
+        - longUrl
+      properties:
+        shortKey:
+          type: string
+          description: The generated or custom short key identifier
+          examples: ["abc123X"]
+        shortUrl:
+          type: string
+          format: uri
+          description: The complete shortened URL
+          examples: ["https://tinyurl.com/abc123X"]
+        longUrl:
+          type: string
+          format: uri
+          description: The target long URL
+          examples: ["https://www.example.com/very/long/url/path"]
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          examples: ["INVALID_ARGUMENT"]
+        message:
+          type: string
+          examples: ["The provided longUrl format is invalid."]

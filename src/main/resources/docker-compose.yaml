@@ -1,0 +1,77 @@
+services:
+
+  postgres:
+
+    image: postgres:16-alpine
+
+    container_name: postgres_db
+
+    restart: always
+
+    environment:
+
+      POSTGRES_USER: admin
+
+      POSTGRES_PASSWORD: tinyurl
+
+      POSTGRES_DB: postgres
+
+    ports:
+
+      # Exposes 5432 to your Mac host (useful if you also want to connect via DBeaver/IntelliJ)
+
+      - "5432:5432"
+
+    volumes:
+
+      # Named volume for database persistence on macOS
+
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+
+      - app_network
+
+
+
+  pgadmin:
+
+    image: dpage/pgadmin4
+
+    container_name: pgadmin_ui
+
+    restart: always
+
+    environment:
+
+      PGADMIN_DEFAULT_EMAIL: admin@tinyurl.com
+
+      PGADMIN_DEFAULT_PASSWORD: password
+
+    ports:
+
+      - "5050:80"
+
+    depends_on:
+
+      - postgres
+
+    networks:
+
+      - app_network
+
+
+
+volumes:
+
+  postgres_data:
+
+    driver: local
+
+
+
+networks:
+
+  app_network:
+
+    driver: bridge
