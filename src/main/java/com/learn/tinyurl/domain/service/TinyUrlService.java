@@ -4,8 +4,12 @@ import com.learn.tinyurl.domain.model.TinyUrl;
 import com.learn.tinyurl.ports.inbound.TinyUrlPort;
 import com.learn.tinyurl.ports.outbound.TinyUrlRepoPort;
 import com.learn.tinyurl.util.DomainService;
+import org.apache.commons.lang3.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  *
@@ -24,7 +28,7 @@ public class TinyUrlService implements TinyUrlPort {
     @Override
     public TinyUrl createTinyUrl(CreateShortUrlCommand command) {
 
-        String shortKey = generateShortKey(command.alias());
+        String shortKey = StringUtils.isBlank(command.alias()) ? generateShortKey() : command.alias();
 
         TinyUrl tinyUrl  = new TinyUrl(command.url(),
                 shortKey, command.expiredAt());
@@ -34,8 +38,9 @@ public class TinyUrlService implements TinyUrlPort {
         return tinyUrl;
     }
 
-    private String generateShortKey(String alias) {
-        return "KKKL"+alias;
+    //AI
+    private String generateShortKey() {
+        return UUID.randomUUID().toString().substring(0, 8);
     }
 
     @Override
