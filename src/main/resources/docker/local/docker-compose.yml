@@ -1,0 +1,109 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: tinyurl
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app_network
+
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin_ui
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@tinyurl.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    networks:
+      - app_network
+
+  # --- OBSERVABILITY STACK ---
+
+  # 1. Grafana Tempo (Traces)
+  tempo:
+    image: grafana/tempo:latest
+    container_name: tempo
+    user: "0:0"
+    command: [ "-config.file=/etc/tempo.yml" ]
+    volumes:
+      - ./tempo.yml:/etc/tempo.yml
+      - tempo_data:/tmp/tempo
+    ports:
+      - "4317:4317"  # OTLP gRPC (Spring Boot sends traces here)
+      - "4318:4318"  # OTLP HTTP
+      - "3200:3200"  # Tempo API (Grafana queries traces here)
+    networks:
+      - app_network
+
+  # 2. Prometheus (Metrics)
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --web.enable-otlp-receiver
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"  # Prometheus UI & API
+    networks:
+      - app_network
+
+  # 3. Grafana Loki (Logs)
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    user: "0:0"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./loki.yml:/etc/loki/local-config.yaml
+      - loki_data:/tmp/loki
+    ports:
+      - "3100:3100"  # Loki push API (Port for logs ingest)
+    networks:
+      - app_network
+
+  # 4. Grafana (Dashboard UI)
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"  # Grafana UI (http://localhost:3000)
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+    volumes:
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - tempo
+      - prometheus
+      - loki
+    networks:
+      - app_network
+
+volumes:
+  postgres_data:
+    driver: local
+  tempo_data:
+  prometheus_data:
+  loki_data:
+  grafana_data:
+
+networks:
+  app_network:
+    driver: bridge
