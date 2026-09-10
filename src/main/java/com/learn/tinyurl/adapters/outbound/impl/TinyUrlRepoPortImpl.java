@@ -31,15 +31,7 @@ public class TinyUrlRepoPortImpl implements TinyUrlRepoPort {
     }
 
     private TinyUrlEntity toEntity(TinyUrl tinyUrl) {
-        return TinyUrlEntity.builder()
-                .url(tinyUrl.url().toString())
-                .shortKey(tinyUrl.shortKey())
-                .expiredAt(tinyUrl.expiredAt())
-                .creationTs(Instant.now())
-                .lastUpdatedTs(Instant.now())
-                .status("100")
-                .version(1L)
-                .build();
+        return new TinyUrlEntity(tinyUrl.url().toString(),tinyUrl.shortKey(),tinyUrl.expiredAt(),"100",1L,Instant.now(),Instant.now());
     }
 
     private TinyUrl toDomain(TinyUrlEntity entity) {
