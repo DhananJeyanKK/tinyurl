@@ -114,11 +114,28 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<dependency>
+			<groupId>io.gatling.highcharts</groupId>
+			<artifactId>gatling-charts-highcharts</artifactId>
+			<version>3.13.5</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>io.gatling</groupId>
+				<artifactId>gatling-maven-plugin</artifactId>
+				<version>4.20.2</version>
+				<configuration>
+
+				</configuration>
+			</plugin>
 
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
