@@ -30,7 +30,7 @@ public class Get_hotpath_url extends Simulation {
     {
         setUp(
                 scn.injectOpen(
-                        atOnceUsers(100000)
+                        atOnceUsers(10000)
                 )
         ).protocols(httpProtocol);
     }

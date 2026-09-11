@@ -11,7 +11,7 @@ import java.time.Instant;
 import java.util.Optional;
 
 @Component
-public class TinyUrlRepoPortImpl implements TinyUrlRepoPort {
+public class TinyUrlRepoPortImpl {
 
     private final TinyUrlRepo tinyUrlRepo;
 
@@ -19,12 +19,12 @@ public class TinyUrlRepoPortImpl implements TinyUrlRepoPort {
         this.tinyUrlRepo = tinyUrlRepo;
     }
 
-    @Override
+
     public void save(TinyUrl tinyUrl) {
         tinyUrlRepo.save(toEntity(tinyUrl));
     }
 
-    @Override
+
     public Optional<TinyUrl> findBy(String shortKey) {
         return tinyUrlRepo.findByShortKey(shortKey).map(this::toDomain);
 
