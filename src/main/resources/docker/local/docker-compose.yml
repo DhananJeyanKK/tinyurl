@@ -14,6 +14,16 @@ services:
     networks:
       - app_network
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - app_network
+
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin_ui
@@ -98,6 +108,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
   tempo_data:
   prometheus_data:
