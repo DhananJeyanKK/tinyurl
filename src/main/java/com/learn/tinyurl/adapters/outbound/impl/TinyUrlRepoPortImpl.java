@@ -3,7 +3,6 @@ package com.learn.tinyurl.adapters.outbound.impl;
 import com.learn.tinyurl.adapters.outbound.jpa.TinyUrlRepo;
 import com.learn.tinyurl.adapters.outbound.persistence.TinyUrlEntity;
 import com.learn.tinyurl.domain.model.TinyUrl;
-import com.learn.tinyurl.ports.outbound.TinyUrlRepoPort;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;

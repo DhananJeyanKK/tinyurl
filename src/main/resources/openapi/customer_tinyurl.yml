@@ -1,0 +1,132 @@
+openapi: 3.1.0
+info:
+  title: Customer API
+  description: API for customer registration and account management.
+  version: 1.0.0
+servers:
+  - url: https://api.example.com/v1
+    description: Production server
+tags:
+  - name: customer
+    description: Customer account operations
+paths:
+  /customer/register:
+    post:
+      tags:
+        - customer
+      summary: Register a new customer
+      description: Creates a new customer account with credentials and role assignment.
+      operationId: registerCustomer
+      requestBody:
+        description: Customer registration parameters
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterCustomerRequest'
+      responses:
+        '201':
+          description: Customer registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponse'
+        '400':
+          description: Invalid input parameters or missing required fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Username or email already registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    RegisterCustomerRequest:
+      type: object
+      required:
+        - email
+        - username
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Unique email address for the customer account
+          examples: ["user@example.com"]
+        username:
+          type: string
+          description: Unique username identifier for logging in
+          examples: ["john_doe"]
+        password:
+          type: string
+          format: password
+          description: Account security password
+          examples: ["P@ssw0rd123!"]
+        role:
+          type: string
+          enum:
+            - admin
+            - customer
+          default: customer
+          description: Access control role assigned to the customer
+          examples: ["customer"]
+
+    CustomerResponse:
+      type: object
+      required:
+        - id
+        - email
+        - username
+        - role
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique system identifier for the customer
+          examples: ["123e4567-e89b-12d3-a456-426614174000"]
+        email:
+          type: string
+          format: email
+          description: Registered email address
+          examples: ["user@example.com"]
+        username:
+          type: string
+          description: Registered username
+          examples: ["john_doe"]
+        role:
+          type: string
+          enum:
+            - admin
+            - customer
+          description: Assigned user role
+          examples: ["customer"]
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the account was created
+          examples: ["2026-09-12T17:41:22Z"]
+
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          examples: ["USER_ALREADY_EXISTS"]
+        message:
+          type: string
+          examples: ["A customer with the provided username or email already exists."]
