@@ -44,26 +44,29 @@ public class SecurityConfig {
 //            }
 //        }));
 
+        http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 
         //Jession by default doesn't store now in Security Context. We have to manually do it.
-        http.securityContext(sc -> sc.requireExplicitSave(false))//Whenever you set or update an Authentication object in the SecurityContextHolder during a request, Spring Security will automatically save it into that HttpSession when the request finishes—without requiring you to call a save method manually.
-                .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.ALWAYS)//Session created for each session
-                .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::newSession)
-                .invalidSessionUrl("/invalidSession").maximumSessions(1).maxSessionsPreventsLogin(true));
+      //  http
+        //        .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)//Session created for each session
+//                .sessionFixation(SessionManagementConfigurer.SessionFixationConfigurer::newSession)
+//                .invalidSessionUrl("/invalidSession").maximumSessions(1).maxSessionsPreventsLogin(true));
 
         //This reads the token from the request - If we don't have then it doesn't read the csrf token.
-        CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
+      //  CsrfTokenRequestAttributeHandler csrfTokenRequestAttributeHandler = new CsrfTokenRequestAttributeHandler();
 
 
         //We disable this because of Permit all gives CSRF exception for post but get works.
         //Token generated only when the token is get accessed. It is generated lazily. You have to write logic to read token manually.
-        http.csrf(csrf -> csrf.csrfTokenRequestHandler(csrfTokenRequestAttributeHandler)
-                        .ignoringRequestMatchers("/customer/register")
-                        .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-                        .addFilterAfter(new CsrfTinyUrlFilter(), BasicAuthenticationFilter.class);
 
-     //   http.authorizeHttpRequests(re -> re.requestMatchers("/url", "/{shortKey}").hasRole("customer"));
+
+
+        http.addFilterAfter(new JWTTokenGeneratorFilter(), BasicAuthenticationFilter.class)
+            .addFilterBefore(new JWTTokenValidatorFilter(), BasicAuthenticationFilter.class);
+
+
+        //   http.authorizeHttpRequests(re -> re.requestMatchers("/url", "/{shortKey}").hasRole("customer"));
 
         http.authorizeHttpRequests(re -> re.requestMatchers("/url", "/{shortKey}").authenticated()
                 .requestMatchers( "/customer/register", "/invalidSession", "/logout").permitAll());
